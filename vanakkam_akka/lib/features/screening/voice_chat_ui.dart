@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
 import 'screening_provider.dart';
+import '../../core/router/app_router.dart';
+import '../../core/state/cycle_mode_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../shared/services/voice_service.dart';
@@ -192,9 +194,11 @@ class _VoiceChatUiScreenState extends State<VoiceChatUiScreen> {
                 children: [
                    ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
-                      onPressed: () {
-                         // Triggers DB shift and leaps logically to the tracking tools 
-                         context.go('/pregnancy_tracker'); 
+                      onPressed: () async {
+                         await context.read<CycleModeProvider>().confirmPregnancyFromScreening();
+                         if (context.mounted) {
+                           context.go(AppRouter.cycleTracker);
+                         }
                       },
                       child: Text("ஆம் (Yes)", style: AppTextStyles.headingMedium.copyWith(color: Colors.white)),
                    ),
@@ -315,7 +319,7 @@ class _HealthSignalCard extends StatelessWidget {
                       const SizedBox(height: 24),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(backgroundColor: riskColor),
-                        onPressed: () => context.go('/home'),
+                        onPressed: () => context.go(AppRouter.home),
                         child: Text("சரி (OK)", style: AppTextStyles.headingMedium.copyWith(color: Colors.white)),
                       )
                    ]

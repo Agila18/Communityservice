@@ -3,16 +3,32 @@ Vanakkam Akka — FastAPI Backend
 Tamil-language AI health app for rural women in India.
 """
 
-import os
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database.connection import init_db, close_db
+from routes import (
+    screening_router,
+    cycle_router,
+    notebook_router,
+    records_router,
+    consultation_router,
+    reminders_router,
+    nutrition_router,
+    vhn_router,
+    insights_router,
+)
+
+try:
+    from routes.auth import router as auth_router
+except ImportError:
+    auth_router = None  # Optional: requires firebase_admin, PyJWT, etc.
 
 load_dotenv()
+
 
 # ---------------------------------------------------------------------------
 # Lifespan – startup / shutdown hooks
@@ -44,14 +60,11 @@ app = FastAPI(
 # ---------------------------------------------------------------------------
 # CORS – allow Flutter app, web dashboard, and dev servers
 # ---------------------------------------------------------------------------
-allowed_origins = os.getenv(
-    "ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:8080"
-).split(",")
-
+# Mobile / emulator clients use varying origins; keep permissive for local dev.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -61,15 +74,18 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 API_PREFIX = "/api/v1"
 
-# Add routes later after basic setup
-# app.include_router(auth.router,          prefix=f"{API_PREFIX}/auth",          tags=["Authentication"])
-# app.include_router(screening.router,     prefix=f"{API_PREFIX}/screening",     tags=["Health Screening"])
-# app.include_router(cycle.router,         prefix=f"{API_PREFIX}/cycle",         tags=["Cycle Tracker"])
-# app.include_router(notebook.router,      prefix=f"{API_PREFIX}/notebook",      tags=["Health Notebook"])
-# app.include_router(consultation.router,  prefix=f"{API_PREFIX}/consultation",  tags=["Teleconsultation"])
-# app.include_router(reminders.router,     prefix=f"{API_PREFIX}/reminders",     tags=["Reminders"])
-# app.include_router(nutrition.router,     prefix=f"{API_PREFIX}/nutrition",     tags=["Nutrition"])
-# app.include_router(vhn.router,           prefix=f"{API_PREFIX}/vhn",           tags=["VHN Mode"])
+if auth_router is not None:
+    app.include_router(auth_router, prefix=f"{API_PREFIX}/auth", tags=["Authentication"])
+app.include_router(screening_router, prefix=f"{API_PREFIX}/screening", tags=["Health Screening"])
+app.include_router(cycle_router, prefix=f"{API_PREFIX}/cycle", tags=["Cycle Tracker"])
+app.include_router(notebook_router, prefix=f"{API_PREFIX}/notebook", tags=["Health Notebook"])
+app.include_router(records_router, prefix=f"{API_PREFIX}/records", tags=["Health Records"])
+app.include_router(consultation_router, prefix=f"{API_PREFIX}/consultation", tags=["Teleconsultation"])
+app.include_router(reminders_router, prefix=f"{API_PREFIX}/reminders", tags=["Reminders"])
+app.include_router(nutrition_router, prefix=f"{API_PREFIX}/nutrition", tags=["Nutrition"])
+app.include_router(vhn_router, prefix=f"{API_PREFIX}/vhn", tags=["VHN Mode"])
+app.include_router(insights_router, prefix=f"{API_PREFIX}/insights", tags=["AI Insights"])
+
 
 # ---------------------------------------------------------------------------
 # Root health-check
@@ -80,7 +96,7 @@ async def root():
         "app": "Vanakkam Akka API",
         "status": "running",
         "version": "1.0.0",
-        "message": "வணக்கம்! சேவையகம் இயங்குகிறது.",  # Server is running
+        "message": "வணக்கம்! சேவையகம் இயங்குகிறது.",
     }
 
 

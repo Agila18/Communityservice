@@ -13,6 +13,9 @@ class LocalDbService {
   late Box _cycleBox;
 
   Future<void> init() async {
+    // Hive.initFlutter() is already called in main.dart or should be handled centrally
+    // Actually, I moved it to main.dart in previous plan, but let's be consistent.
+    // If I use Hive.initFlutter() here, it's fine as long as it's the ONLY place.
     await Hive.initFlutter();
     
     // Caches mapping independent historical arrays assuring continuous tracking without web
@@ -39,7 +42,7 @@ class LocalDbService {
        payload: sessionMetrics,
        timestamp: DateTime.now()
     );
-    OfflineSyncManager().queueAction(action);
+    await OfflineSyncManager().queueAction(action);
   }
 
   /// Caches strict maternal period entries natively to visually draw UI states completely offline reliably
@@ -57,7 +60,20 @@ class LocalDbService {
        payload: cycleMetrics,
        timestamp: DateTime.now()
     );
-    OfflineSyncManager().queueAction(action);
+    await OfflineSyncManager().queueAction(action);
+  }
+
+  /// Sorted ascending by [start_date] (yyyy-MM-dd) for offline cycle analysis.
+  List<Map<String, dynamic>> getCycleEntriesSorted() {
+    if (!Hive.isBoxOpen('cached_cycles')) return [];
+    final box = Hive.box('cached_cycles');
+    final list = box.values.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    list.sort((a, b) {
+      final da = DateTime.parse(a['start_date'] as String);
+      final db = DateTime.parse(b['start_date'] as String);
+      return da.compareTo(db);
+    });
+    return list;
   }
 
   // --- Utility Diagnostics Mapping Interfaces ---

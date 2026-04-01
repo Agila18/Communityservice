@@ -4,8 +4,11 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/cycle/local_cycle_analysis.dart';
+import '../../core/state/cycle_mode_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../shared/services/local_db_service.dart';
 import '../../shared/services/voice_service.dart';
 import '../../shared/widgets/voice_button.dart';
 
@@ -58,51 +61,50 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
 
   /// Pulls the aggregate mathematical insights based off prior 3-cycle logs
   Future<void> _fetchAnalysis() async {
+    late Map<String, dynamic> data;
     try {
-      // Typically dynamically loaded via UserProvider or AuthService scope
-      final res = await _dio.get('/cycle/analysis/1'); 
-      final data = res.data;
-      
-      setState(() {
-        _aiInsightText = data['recommendation_tamil'] ?? "காணவில்லை";
-        _isIrregular = data['irregularity_flag'] == true || data['pregnancy_probability'] == true;
-        _isLoadingInsight = false;
-      });
-      
-      // Accessibility priority: auto-read serious alerts
-      if (_isIrregular) {
-         context.read<VoiceService>().speak(_aiInsightText);
-      }
-    } catch (e) {
-      setState(() {
-        _isLoadingInsight = false;
-        _aiInsightText = "சர்வர் பிழை. இணைய இணைப்பு சரிபார்க்கவும்.";
-      });
+      final res = await _dio.get('/cycle/analysis/1');
+      data = Map<String, dynamic>.from(res.data as Map);
+    } catch (_) {
+      data = analyzeCyclePatternLocal(LocalDbService().getCycleEntriesSorted());
+    }
+
+    if (!mounted) return;
+    final preg = data['pregnancy_probability'] == true;
+    final irregular =
+        data['irregularity_flag'] == true || preg;
+    context.read<CycleModeProvider>().setAiSuggestsPregnancyTest(preg);
+
+    setState(() {
+      _aiInsightText = data['recommendation_tamil'] ?? "காணவில்லை";
+      _isIrregular = irregular;
+      _isLoadingInsight = false;
+    });
+
+    if (irregular && mounted) {
+      context.read<VoiceService>().speak(_aiInsightText);
     }
   }
 
-  /// Posts structured event data into POST /cycle/period
+  /// Offline-first period log → Hive + sync queue; refreshes AI insight when possible.
   Future<void> _logPeriod() async {
     if (_selectedDay == null) return;
-    
-    // Explicitly stripping time components for strict DB parity
+
     final normalizedDate = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
-    
+    final payload = {
+      "user_id": 1,
+      "start_date": DateFormat('yyyy-MM-dd').format(normalizedDate),
+      "flow_level": _flowLevel,
+      "symptoms": _symptoms,
+    };
+
     try {
-       await _dio.post('/cycle/period', data: {
-         "user_id": 1, 
-         "start_date": DateFormat('yyyy-MM-dd').format(normalizedDate),
-         "flow_level": _flowLevel,
-         "symptoms": _symptoms,
-      });
-      
+      await LocalDbService().saveCycleEntryLocally(payload);
       setState(() => _historicalPeriods[normalizedDate] = "PERIOD");
-      
-      context.read<VoiceService>().speak("பதிவு செய்யப்பட்டது"); // "Logged successfully"
-      _fetchAnalysis(); // Retrieve recalculated heuristic averages immediately
-      
-    } catch(e) {
-      context.read<VoiceService>().speak("சேமிக்க முடியவில்லை"); // "Failed to save"
+      if (mounted) context.read<VoiceService>().speak("பதிவு செய்யப்பட்டது");
+      await _fetchAnalysis();
+    } catch (e) {
+      if (mounted) context.read<VoiceService>().speak("சேமிக்க முடியவில்லை");
     }
   }
 
@@ -132,6 +134,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                      crossAxisAlignment: CrossAxisAlignment.stretch,
                      children: [
                        const SizedBox(height: 24),
+                       _buildPregnancyTransitionBanner(),
                        _buildControlPanel(),
                        const SizedBox(height: 32),
                        _buildAiInsightBox(),
@@ -149,6 +152,45 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         // Override accessibility constraints allowing continuous listening contexts if desired
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+    );
+  }
+
+  Widget _buildPregnancyTransitionBanner() {
+    return Consumer<CycleModeProvider>(
+      builder: (context, mode, _) {
+        if (!mode.aiSuggestsPregnancyTest || mode.pregnancyMode) {
+          return const SizedBox.shrink();
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Material(
+            color: AppColors.accent.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(20),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () async {
+                await context.read<CycleModeProvider>().setPregnancyMode(true);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    const Icon(Icons.pregnant_woman_rounded, size: 40, color: AppColors.secondary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        "கர்ப்ப பரிசோதனை பற்றி AI குறிப்பு உள்ளது. கர்ப்ப கால கையேடுக்குச் செல்ல தட்டவும்.",
+                        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded, color: AppColors.secondary),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 

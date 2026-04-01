@@ -25,14 +25,19 @@ class VoiceService extends ChangeNotifier {
   // ==========================================
   
   Future<void> _initTts() async {
-    // Await completion of setting standard engine rules
-    await _tts.setLanguage("ta-IN");
-    await _tts.setSpeechRate(0.75); // Slower rate requested specs
-    await _tts.setVolume(1.0);
-    await _tts.setPitch(1.0);
-    
-    // Some devices require specific engine initialization for indic languages
-    await _tts.awaitSpeakCompletion(true);
+    try {
+      await _tts.setLanguage("ta-IN");
+    } catch (_) {
+      try {
+        await _tts.setLanguage("en-IN");
+      } catch (_) {}
+    }
+    try {
+      await _tts.setSpeechRate(0.75);
+      await _tts.setVolume(1.0);
+      await _tts.setPitch(1.0);
+      await _tts.awaitSpeakCompletion(true);
+    } catch (_) {}
 
     _tts.setStartHandler(() {
       _isSpeaking = true;

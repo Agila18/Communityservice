@@ -114,7 +114,7 @@ class _VoiceMessageChatScreenState extends State<VoiceMessageChatScreen> {
                         const SizedBox(height: 16),
                         Text(
                            "பிடித்துக்கொண்டு பேசுங்கள்",  // Hold to Record
-                           style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)
+                           style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary)
                         )
                      ],
                   )

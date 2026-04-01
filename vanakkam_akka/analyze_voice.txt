@@ -1,0 +1,7 @@
+﻿Analyzing voice_reminder_service.dart...                        
+
+  error - The named parameter 'settings' is required, but there's no corresponding argument - lib\features\reminders\voice_reminder_service.dart:26:44 - missing_required_argument
+  error - The named parameter 'initializationSettings' isn't defined - lib\features\reminders\voice_reminder_service.dart:27:7 - undefined_named_parameter
+  error - The named parameter 'uiLocalNotificationDateInterpretation' isn't defined - lib\features\reminders\voice_reminder_service.dart:85:7 - undefined_named_parameter
+  error - Undefined name 'UILocalNotificationDateInterpretation' - lib\features\reminders\voice_reminder_service.dart:85:46 - undefined_identifier
+

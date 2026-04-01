@@ -95,7 +95,7 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
                                     children: [
                                        const Icon(Icons.check_circle_rounded, color: AppColors.riskGreen, size: 16),
                                        const SizedBox(width: 4),
-                                       Expanded(child: Text(_nurseStatus, style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary))),
+                                       Expanded(child: Text(_nurseStatus, style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary))),
                                     ]
                                  )
                               ]
@@ -142,7 +142,7 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade300)),
                                   child: ListTile(
                                      contentPadding: const EdgeInsets.all(16),
-                                     title: Text(s['date'], style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                                     title: Text(s['date'], style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary)),
                                      subtitle: Padding(
                                         padding: const EdgeInsets.only(top: 8.0),
                                         child: Text(s['summary'], style: AppTextStyles.headingMedium),

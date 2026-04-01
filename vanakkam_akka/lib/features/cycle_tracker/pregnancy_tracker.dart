@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 
+import '../../core/state/cycle_mode_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../shared/services/voice_service.dart';
@@ -21,7 +21,6 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
   
   bool _isLoading = true;
   Map<String, dynamic>? _currentWeekData;
-  final int _currentWeek = 12; // Initially mocked locally representing transition state
 
   @override
   void initState() {
@@ -30,16 +29,17 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
   }
 
   Future<void> _initTracker() async {
+    final week = context.read<CycleModeProvider>().pregnancyWeek.clamp(1, 40);
     // 1. Fetch exact week mapping from the backend AI database
     try {
-      final res = await _dio.get('/cycle/pregnancy_data/$_currentWeek');
+      final res = await _dio.get('/cycle/pregnancy_data/$week');
       if (res.statusCode == 200) {
         _currentWeekData = res.data;
       }
     } catch(e) {
       // 2. Offline safe fallback mapping to ensure crucial health messages render offline
       _currentWeekData = {
-         "week": _currentWeek,
+         "week": week,
          "size_comparison": "எலுமிச்சை அளவு",
          "tamil_message": "வாந்தி மற்றும் சோர்வு படிப்படியாக குறையும்",
          "warning": "திடீர் எடை குறைவு இருந்தால் VHN-ஐ பாருங்கள்",
@@ -53,6 +53,7 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
     // Voice Accessibility Trigger dictating exact AI payloads without needing reading
     if (_currentWeekData != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+         if (!mounted) return;
          final String size = _currentWeekData!['size_comparison'];
          final String msg = _currentWeekData!['tamil_message'];
          context.read<VoiceService>().speak("அக்கா, உங்கள் குழந்தை இப்போ $size இருக்கு. $msg.");
@@ -62,6 +63,7 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final week = context.watch<CycleModeProvider>().pregnancyWeek.clamp(1, 40);
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
@@ -77,6 +79,15 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
       appBar: AppBar(
         title: Text("கர்ப்ப கால கையேடு", style: AppTextStyles.headingMedium), // Pregnancy Guide
         leading: const BackButton(),
+        actions: [
+          TextButton(
+            onPressed: () => context.read<CycleModeProvider>().setPregnancyMode(false),
+            child: Text(
+              "மாதவிடாய் பதிவு",
+              style: AppTextStyles.bodyLarge.copyWith(color: AppColors.secondary, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -103,7 +114,7 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
                         width: 140,
                         height: 140,
                         child: CircularProgressIndicator(
-                          value: _currentWeek / 40.0,
+                          value: week / 40.0,
                           strokeWidth: 8,
                           backgroundColor: Colors.grey.shade200,
                           color: AppColors.primary,
@@ -113,7 +124,7 @@ class _PregnancyTrackerScreenState extends State<PregnancyTrackerScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text("வாரம்", style: AppTextStyles.bodyLarge), // Week
-                          Text("$_currentWeek", style: AppTextStyles.headingLarge.copyWith(fontSize: 48, color: AppColors.primary)),
+                          Text("$week", style: AppTextStyles.headingLarge.copyWith(fontSize: 48, color: AppColors.primary)),
                         ],
                       )
                     ],

@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  // Primary palette
-  static const Color primary = Color(0xFFE8930A); // Warm saffron
-  static const Color primaryDark = Color(0xFFC97B00); // Darker saffron
-  static const Color secondary = Color(0xFF1A6B3A); // Deep green
-  static const Color accent = Color(0xFFF5C518); // Turmeric
+  // Primary palette — Modern-Rural (warm, trustworthy)
+  static const Color primary = Color(0xFFFF9933); // Saffron
+  static const Color primaryDark = Color(0xFFE65100); // Deeper saffron
+  static const Color secondary = Color(0xFF2E7D32); // Deep organic green
+  static const Color accent = Color(0xFFFBC02D); // Turmeric yellow
 
   // Feature colors
   static const Color screening = Color(0xFFE8930A); // Saffron
@@ -25,7 +25,7 @@ class AppColors {
   static const Color surface = Color(0xFFFFFFFF);
 
   // Risk & Status Colors
-  static const Color riskGreen = Color(0xFF2D7A3A);
+  static const Color riskGreen = Color(0xFF2E7D32);
   static const Color riskYellow = Color(0xFFC97B00);
   static const Color riskRed = Color(0xFFC0392B);
 

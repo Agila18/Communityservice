@@ -186,7 +186,7 @@ class _ReminderHomeScreenState extends State<ReminderHomeScreen> {
                                children: [
                                   Text(visualConfig['label'], style: AppTextStyles.headingMedium),
                                   const SizedBox(height: 4),
-                                  Text("Time: $formattedTime", style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                                  Text("Time: $formattedTime", style: AppTextStyles.bodyLarge.copyWith(color: AppColors.textSecondary)),
                                ]
                             )
                          )

@@ -49,14 +49,19 @@ class _ReportUploadScreenState extends State<ReportUploadScreen> {
     // Leverage explicit bounds cropping narrowing Native MLKit focus heavily!
     CroppedFile? croppedFile = await ImageCropper().cropImage(
       sourcePath: file.path,
-      aspectRatioPresets: [CropAspectRatioPreset.square, CropAspectRatioPreset.ratio3x2, CropAspectRatioPreset.ratio4x3],
       uiSettings: [
         AndroidUiSettings(
             toolbarTitle: 'ரிப்போர்ட்டை வெட்டவும்', // Crop Report
             toolbarColor: AppColors.primary,
             toolbarWidgetColor: Colors.white,
             initAspectRatio: CropAspectRatioPreset.original,
-            lockAspectRatio: false),
+            lockAspectRatio: false,
+            aspectRatioPresets: [
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio3x2,
+              CropAspectRatioPreset.ratio4x3,
+              CropAspectRatioPreset.original,
+            ]),
       ],
     );
 

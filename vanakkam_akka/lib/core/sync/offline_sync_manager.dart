@@ -86,31 +86,34 @@ class OfflineSyncManager {
 
   Future<void> init() async {
     await initHiveOnly();
-    
-    // Engages standard daemon bindings ensuring syncing happens silently behind the scenes
-    Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
-    
-    // Front-end active net listener instantly jumping the queue avoiding scheduled polling bounds
+
+    try {
+      Workmanager().initialize(callbackDispatcher, isInDebugMode: false);
+    } catch (_) {}
+
     _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
-       if (results.isNotEmpty && results.first != ConnectivityResult.none) {
-           processPendingQueue();
-       }
+      if (results.isNotEmpty && results.first != ConnectivityResult.none) {
+        processPendingQueue();
+      }
     });
 
-    // Clean any stagnant states trapped from abrupt OS task kills securely upon mount
     processPendingQueue();
   }
 
   /// Appends explicit Sync operations directly into native disk arrays safely
-  void queueAction(SyncAction action) {
+  Future<void> queueAction(SyncAction action) async {
+    await initHiveOnly();
     _queueBox.put(action.id, action.toMap());
-    
-    // Explicitly command OS schedulers bounding the background constraint ensuring delivery eventually
-    Workmanager().registerOneOffTask(
+
+    try {
+      Workmanager().registerOneOffTask(
         "sync_${action.id}",
         "processOfflineQueue",
-        constraints: Constraints(networkType: NetworkType.connected)
-    );
+        constraints: Constraints(networkType: NetworkType.connected),
+      );
+    } catch (_) {
+      // Workmanager unavailable (e.g. desktop); foreground [processPendingQueue] still runs.
+    }
   }
 
   /// Evaluates length mapping explicit Badge UI outputs directly back to the visual router layers natively

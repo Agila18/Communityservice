@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -24,7 +23,7 @@ class VoiceReminderService {
     const InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
     
     await _flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
          if (response.payload != null) {
             // When user taps the system notification banner -> immediately dictate audio!
@@ -66,11 +65,11 @@ class VoiceReminderService {
     final String tamilText = customMessage ?? "அக்கா, $medicineName சாப்பிட மறந்துவிடாதீர்கள்!";
     
     await _flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      'மருந்து நேரம்! (Time for your medicine)',
-      tamilText,
-      tz.TZDateTime.from(optimalTime, tz.local),
-      const NotificationDetails(
+      id: id,
+      title: 'மருந்து நேரம்! (Time for your medicine)',
+      body: tamilText,
+      scheduledDate: tz.TZDateTime.from(optimalTime, tz.local),
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'vanakkam_akka_reminders',
           'Medicines & Clinical Reminders (மாத்திரைகள்)',
@@ -82,8 +81,8 @@ class VoiceReminderService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      payload: tamilText, // Safely cached raw Tamil string for localized VoiceService bridging
+      // Removed uiLocalNotificationDateInterpretation as it appears undefined/optional in v21.0.0
+      payload: tamilText, 
     );
   }
 }

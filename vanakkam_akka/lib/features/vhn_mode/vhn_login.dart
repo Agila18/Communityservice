@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 
+import 'package:go_router/go_router.dart';
+
 /// Distinctive visual authentication isolating VHN capabilities entirely away from the Maternal flow.
 /// Designed for high-volume clinic workers demanding secure, deterministic phone entry protocols.
 class VhnLoginScreen extends StatefulWidget {
@@ -17,7 +19,7 @@ class _VhnLoginScreenState extends State<VhnLoginScreen> {
   void _loginVhn() {
      // Standard stub routing directly mirroring identical Firebase pathways 
      // but asserting explicit 'role=VHN' mappings on the secure DB creation
-     Navigator.pushReplacementNamed(context, '/vhn_dashboard');
+     context.go('/vhn-dashboard');
   }
 
   @override
