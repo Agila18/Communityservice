@@ -2,6 +2,23 @@
 class TamilStrings {
   TamilStrings._();
 
+  // App basics
+  static const String appName = "வணக்கம் அக்கா";
+  static const String appTagline = "உங்கள் ஆரோக்கியப் பாதுகாவலர்";
+  static const String welcome = "வணக்கம்";
+  static const String welcomeMessage = "உங்கள் ஆரோக்கியத்தைக் கவனிக்க நாங்கள் இங்கே உள்ளோம்";
+
+  // Feature names
+  static const String screening = "ஆரோக்கிய பரிசோதனை";
+  static const String cycleTracker = "மாதவிடாய் கண்காணிப்பு";
+  static const String healthNotebook = "ஆரோக்கியக் குறிப்பேடு";
+  static const String teleconsult = "மருத்துவர் ஆலோசனை";
+  static const String reminders = "நினைவூட்டல்கள்";
+  static const String nutrition = "ஊட்டச்சத்து";
+  static const String vhnMode = "VHN பயன்முறை";
+  static const String home = "முகப்பு";
+  static const String healthTips = "ஆரோக்கிய குறிப்புகள்";
+
   // 1. Greetings
   static const String greetingAkka = "வணக்கம் அக்கா";
   static const String greetingHowAreYou = "இன்னைக்கு எப்படி இருக்கீங்க?";

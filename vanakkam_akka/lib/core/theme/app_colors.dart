@@ -7,8 +7,18 @@ class AppColors {
 
   // Primary palette
   static const Color primary = Color(0xFFE8930A); // Warm saffron
+  static const Color primaryDark = Color(0xFFC97B00); // Darker saffron
   static const Color secondary = Color(0xFF1A6B3A); // Deep green
   static const Color accent = Color(0xFFF5C518); // Turmeric
+
+  // Feature colors
+  static const Color screening = Color(0xFFE8930A); // Saffron
+  static const Color cycleTracker = Color(0xFFE91E63); // Pink
+  static const Color healthNotebook = Color(0xFF1A6B3A); // Green
+  static const Color teleconsult = Color(0xFF2196F3); // Blue
+  static const Color reminders = Color(0xFF9C27B0); // Purple
+  static const Color nutrition = Color(0xFFFF9800); // Orange
+  static const Color vhnMode = Color(0xFF607D8B); // Blue Grey
 
   // Backgrounds & Surfaces (No harsh whites)
   static const Color background = Color(0xFFFFF9F0); // Warm off-white

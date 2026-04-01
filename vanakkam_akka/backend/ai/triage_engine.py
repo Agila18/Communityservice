@@ -8,16 +8,23 @@ def classify_risk(symptoms_text: str, is_pregnant: bool, pregnancy_week: int = 0
     
     # Check RED Flags (Critical / Emergency conditions)
     if is_pregnant:
-        if any(w in text for w in ["heavy bleeding", "இரத்தப்போக்கு", "ரத்தம் அதிகமா"]):
-            return "RED" # Severe bleeding -> Placenta issues / Miscarriage risk
+        # Week < 20 + bleeding -> miscarriage risk
+        if pregnancy_week < 20 and any(w in text for w in ["bleeding", "இரத்தப்போக்கு", "ரத்தம்"]):
+            return "RED"
         
-        if any(w in text for w in ["headache", "தலை வலி"]) and any(w in text for w in ["swelling", "வீக்கம்"]):
-            return "RED" # Severe headache + swelling -> Preeclampsia flag
+        # Week > 20 + severe headache + swelling -> preeclampsia
+        if pregnancy_week > 20 and any(w in text for w in ["headache", "தலை வலி"]) and any(w in text for w in ["swelling", "வீக்கம்"]):
+            return "RED"
             
-        if any(w in text for w in ["fetal movement", "குழந்தை அசையல", "அசைவு தெரியல"]) and pregnancy_week > 28:
-            return "RED" # Lack of fetal movement in 3rd trimester -> Fetal distress
+        # Week > 28 + no fetal movement -> fetal distress
+        if pregnancy_week > 28 and any(w in text for w in ["fetal movement", "குழந்தை அசையல", "அசைவு"]):
+            return "RED"
             
-    # Check YELLOW Flags (Requires clinical attention / Non-emergency)
+    # Any week (Pregnant or not) + fever > 2 days -> YELLOW
+    if any(w in text for w in ["fever", "காய்ச்சல்"]) and any(w in text for w in ["2 days", "2 நாள்", "ரெண்டு"]):
+        return "YELLOW"
+        
+    # Standard Non-Pregnant YELLOW Flags
     if any(w in text for w in ["dizziness", "தலை சுத்து", "மயக்கம்"]) and any(w in text for w in ["fatigue", "சோர்வு", "வெளுத்து"]):
         return "YELLOW" # Dizziness + Fatigue -> Anemia possible
         

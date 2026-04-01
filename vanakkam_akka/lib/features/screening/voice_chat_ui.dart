@@ -107,7 +107,10 @@ class _VoiceChatUiScreenState extends State<VoiceChatUiScreen> {
                     itemCount: screening.messages.length + (screening.isComplete ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == screening.messages.length) {
-                         // Final assessment trigger
+                         // Final assessment trigger intercept
+                         if (screening.currentRiskLevel == 'PREGNANCY_TRANSITION_PROMPT') {
+                             return _buildPregnancyTransition(context);
+                         }
                          return _HealthSignalCard(riskLevel: screening.currentRiskLevel);
                       }
                       final msg = screening.messages[index];
@@ -144,7 +147,13 @@ class _VoiceChatUiScreenState extends State<VoiceChatUiScreen> {
                         child: Text(statusText),
                       ),
                       const SizedBox(height: 16),
-                      VoiceButton(onResult: _onUserSpeak),
+                      GestureDetector(
+                          onTap: () {
+                             // Dismiss keyboard if testing manually
+                             FocusScope.of(context).unfocus();
+                          },
+                          child: VoiceButton(onResult: _onUserSpeak)
+                      )
                     ],
                   );
                 }
@@ -154,6 +163,50 @@ class _VoiceChatUiScreenState extends State<VoiceChatUiScreen> {
         ),
       ),
     );
+  }
+
+  // =============================================
+  // AI Transition Block
+  // =============================================
+  Widget _buildPregnancyTransition(BuildContext context) {
+     return Container(
+       margin: const EdgeInsets.only(top: 16.0, bottom: 32.0),
+       padding: const EdgeInsets.all(24.0),
+       decoration: BoxDecoration(
+          color: AppColors.accent.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(24.0),
+          border: Border.all(color: AppColors.accent, width: 2)
+       ),
+       child: Column(
+          children: [
+             const Icon(Icons.pregnant_woman_rounded, size: 64, color: AppColors.primary),
+             const SizedBox(height: 16),
+             Text(
+                "கர்ப்ப பரிசோதனை (Pregnancy Test) செய்து உறுதி செய்துவிட்டீர்களா?",
+                style: AppTextStyles.headingMedium.copyWith(color: AppColors.primary),
+                textAlign: TextAlign.center,
+             ),
+             const SizedBox(height: 24),
+             Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                   ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+                      onPressed: () {
+                         // Triggers DB shift and leaps logically to the tracking tools 
+                         context.go('/pregnancy_tracker'); 
+                      },
+                      child: Text("ஆம் (Yes)", style: AppTextStyles.headingMedium.copyWith(color: Colors.white)),
+                   ),
+                   OutlinedButton(
+                      onPressed: () => context.pop(),
+                      child: Text("இல்லை", style: AppTextStyles.headingMedium.copyWith(color: AppColors.primary)),
+                   )
+                ],
+             )
+          ]
+       )
+     );
   }
 }
 

@@ -22,7 +22,7 @@ langchain-community==0.0.10
 transformers==4.36.2
 torch==2.1.2
 sentencepiece==0.1.99
-indicnlp==0.92
+indicnlp==0.0.1
 
 # === Tamil NLP ===
 googletrans==4.0.0rc1
@@ -45,7 +45,6 @@ redis==5.0.1
 apscheduler==3.10.4
 
 # === Utilities ===
-httpx==0.25.2
 pydantic[email]==2.5.3
 pydantic-settings==2.1.0
 aiofiles==23.2.1

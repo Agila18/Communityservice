@@ -11,16 +11,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database.connection import init_db, close_db
-from routes import (
-    auth,
-    screening,
-    cycle,
-    notebook,
-    consultation,
-    reminders,
-    nutrition,
-    vhn,
-)
 
 load_dotenv()
 
@@ -71,14 +61,15 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 API_PREFIX = "/api/v1"
 
-app.include_router(auth.router,          prefix=f"{API_PREFIX}/auth",          tags=["Authentication"])
-app.include_router(screening.router,     prefix=f"{API_PREFIX}/screening",     tags=["Health Screening"])
-app.include_router(cycle.router,         prefix=f"{API_PREFIX}/cycle",         tags=["Cycle Tracker"])
-app.include_router(notebook.router,      prefix=f"{API_PREFIX}/notebook",      tags=["Health Notebook"])
-app.include_router(consultation.router,  prefix=f"{API_PREFIX}/consultation",  tags=["Teleconsultation"])
-app.include_router(reminders.router,     prefix=f"{API_PREFIX}/reminders",     tags=["Reminders"])
-app.include_router(nutrition.router,     prefix=f"{API_PREFIX}/nutrition",     tags=["Nutrition"])
-app.include_router(vhn.router,           prefix=f"{API_PREFIX}/vhn",           tags=["VHN Mode"])
+# Add routes later after basic setup
+# app.include_router(auth.router,          prefix=f"{API_PREFIX}/auth",          tags=["Authentication"])
+# app.include_router(screening.router,     prefix=f"{API_PREFIX}/screening",     tags=["Health Screening"])
+# app.include_router(cycle.router,         prefix=f"{API_PREFIX}/cycle",         tags=["Cycle Tracker"])
+# app.include_router(notebook.router,      prefix=f"{API_PREFIX}/notebook",      tags=["Health Notebook"])
+# app.include_router(consultation.router,  prefix=f"{API_PREFIX}/consultation",  tags=["Teleconsultation"])
+# app.include_router(reminders.router,     prefix=f"{API_PREFIX}/reminders",     tags=["Reminders"])
+# app.include_router(nutrition.router,     prefix=f"{API_PREFIX}/nutrition",     tags=["Nutrition"])
+# app.include_router(vhn.router,           prefix=f"{API_PREFIX}/vhn",           tags=["VHN Mode"])
 
 # ---------------------------------------------------------------------------
 # Root health-check

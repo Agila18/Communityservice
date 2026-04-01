@@ -67,7 +67,7 @@ class ScreeningProvider extends ChangeNotifier {
       return aiResponse;
     } catch (e) {
       isThinking = false;
-      final errorMsg = "மன்னிக்கவும், பிணையப் இணைப்பில் சிக்கல் உள்ளது. மீண்டும் கூறுங்கள்."; // Sorry, network issue. Please repeat.
+      const errorMsg = "மன்னிக்கவும், பிணையப் இணைப்பில் சிக்கல் உள்ளது. மீண்டும் கூறுங்கள்."; // Sorry, network issue. Please repeat.
       messages.add(ChatMessage(text: errorMsg, isUser: false));
       notifyListeners();
       return errorMsg;

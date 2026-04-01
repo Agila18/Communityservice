@@ -1,9 +1,40 @@
+# Secret files — NEVER commit these
+.env
+.env.local
+backend/.env
+backend/serviceAccountKey.json
+backend/*.json
+
+# Flutter
+.dart_tool/
+build/
+*.g.dart
+*.freezed.dart
+pubspec.lock
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+*.egg-info/
+
+# Android / iOS (generated files)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+android/.gradle/
+*.keystore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
 # Miscellaneous
 *.class
 *.log
-*.pyc
 *.swp
-.DS_Store
 .atom/
 .build/
 .buildlog/
@@ -13,7 +44,6 @@
 migrate_working_dir/
 
 # IntelliJ related
-*.iml
 *.ipr
 *.iws
 .idea/

@@ -63,3 +63,36 @@ async def get_cycle_analysis(user_id: int, db: AsyncSession = Depends(get_db)):
         
     # Funnel into the mathematical heuristic aggregator
     return analyze_cycle_pattern(entries)
+
+@router.get("/pregnancy_data/{week}")
+async def fetch_pregnancy_week_data(week: int):
+    """
+    Exposes the curated JSON database providing localized maternal guidance.
+    Ensures safe boundary checks capping to 40 weeks.
+    """
+    import json
+    import os
+    
+    file_path = os.path.join(os.path.dirname(__file__), "..", "data", "pregnancy_weeks.json")
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            weeks_array = json.load(f)
+            
+        # Identify exact week matching (Fallbacks to limit clamping safely)
+        target_week = max(1, min(week, 40))
+        for item in weeks_array:
+             if item.get("week") == target_week:
+                 return item
+                 
+        return weeks_array[0]
+        
+    except Exception as e:
+        # Fallback dictionary simulating safe offline-cache behavior
+        return {
+           "week": week,
+           "size_comparison": "தகவல் இல்லை",
+           "tamil_message": "இணைய இணைப்பு இல்லை.",
+           "warning": "",
+           "action": "",
+           "scheme_reminder": ""
+        }
