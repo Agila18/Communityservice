@@ -1,12 +1,13 @@
-/// Complete Tamil language strings organized by feature for the Vanakkam Akka app.
+/// Complete Tamil language strings organized by feature for the Arogya app.
 class TamilStrings {
   TamilStrings._();
 
   // App basics
-  static const String appName = "வணக்கம் அக்கா";
+  static const String appName = "ஆரோக்யா";
   static const String appTagline = "உங்கள் ஆரோக்கியப் பாதுகாவலர்";
   static const String welcome = "வணக்கம்";
-  static const String welcomeMessage = "உங்கள் ஆரோக்கியத்தைக் கவனிக்க நாங்கள் இங்கே உள்ளோம்";
+  static const String welcomeMessage =
+      "உங்கள் ஆரோக்கியத்தைக் கவனிக்க நாங்கள் இங்கே உள்ளோம்";
 
   // Feature names
   static const String screening = "ஆரோக்கிய பரிசோதனை";
@@ -31,10 +32,12 @@ class TamilStrings {
   static const String navConsult = "மருத்துவர் ஆலோசனை";
 
   // 3. Onboarding
-  static const String onboardLanguageSelect = "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்";
+  static const String onboardLanguageSelect =
+      "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்";
   static const String onboardNameEntry = "உங்கள் பெயர் என்ன?";
   static const String onboardAge = "உங்கள் வயது என்ன?";
-  static const String onboardLocation = "நீங்கள் எந்த ஊரிலிருந்து வருகிறீர்கள்?";
+  static const String onboardLocation =
+      "நீங்கள் எந்த ஊரிலிருந்து வருகிறீர்கள்?";
 
   // 4. Screening Categories & Risk Levels
   static const String categoryMaternal = "கர்ப்பகால ஆரோக்கியம்";
@@ -104,11 +107,14 @@ class TamilStrings {
   };
 
   // 7. Reminders
-  static const String reminderIronTablet = "இரும்புச்சத்து மாத்திரை போட மறந்துடாதீங்க";
+  static const String reminderIronTablet =
+      "இரும்புச்சத்து மாத்திரை போட மறந்துடாதீங்க";
   static const String reminderCalcium = "கால்சியம் மாத்திரை உட்கொள்ளவும்";
   static const String reminderWater = "தண்ணீர் நிறைய குடிக்கவும்";
-  static const String reminderAncCheckup = "கர்ப்பகால பரிசோதனைக்கு (ANC) செல்லவும்";
-  static const String reminderPhcVisit = "ஆரம்ப சுகாதார நிலையத்திற்கு (PHC) செல்லவும்";
+  static const String reminderAncCheckup =
+      "கர்ப்பகால பரிசோதனைக்கு (ANC) செல்லவும்";
+  static const String reminderPhcVisit =
+      "ஆரம்ப சுகாதார நிலையத்திற்கு (PHC) செல்லவும்";
 
   // 8. Health Notebook
   static const String notebookUpload = "பதிவேற்றுக";

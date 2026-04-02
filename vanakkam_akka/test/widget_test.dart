@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:vanakkam_akka/main.dart';
+import 'package:arogya/main.dart';
 
 void main() {
   testWidgets('App renders home screen', (WidgetTester tester) async {
-    await tester.pumpWidget(const VanakkamAkkaApp());
+    await tester.pumpWidget(const ArogyaApp());
     await tester.pumpAndSettle();
 
     // Verify the app name is displayed

@@ -1,4 +1,4 @@
-name: vanakkam_akka
+name: arogya
 description: "Tamil-language AI health app for rural women in India"
 publish_to: 'none'
 
@@ -16,6 +16,9 @@ dependencies:
   # --- Voice & Speech ---
   flutter_tts: ^3.8.3
   speech_to_text: ^6.3.0
+  permission_handler: ^11.0.1
+  record: ^5.0.4
+  path: ^1.8.3
 
   # --- Local Storage ---
   hive: ^2.2.3

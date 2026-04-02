@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -9,20 +9,7 @@ import os
 import time
 
 from database.connection import get_db, Base
-from models.db_models import User, HealthProfile, ScreeningSession, HealthRecord, RecordType
-
-# ---------------------------------------------------------
-# Dynamic SQLAlchemy schema isolating Tele-Consult module
-# ---------------------------------------------------------
-class ConsultationSession(Base):
-    __tablename__ = "tele_consultations"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, index=True)
-    vhn_id = Column(Integer, index=True)
-    auto_summary = Column(Text)
-    status = Column(String, default="OPEN") # OPEN, RESOLVED
-    created_at = Column(DateTime, default=datetime.utcnow)
-    care_advice = Column(Text, nullable=True) # JSON or String block from Nurse
+from models.db_models import User, HealthProfile, ScreeningSession, HealthRecord, RecordType, ConsultationSession
 
 class ConsultationMessage(Base):
     __tablename__ = "tele_messages"

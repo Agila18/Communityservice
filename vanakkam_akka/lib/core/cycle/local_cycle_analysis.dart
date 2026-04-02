@@ -1,5 +1,10 @@
+import 'package:intl/intl.dart';
+
 /// Mirrors [backend/ai/cycle_analyzer.py] for offline analysis from cached Hive entries.
-Map<String, dynamic> analyzeCyclePatternLocal(List<Map<String, dynamic>> entries) {
+/// Enhanced with ovulation prediction and fertile window calculations
+Map<String, dynamic> analyzeCyclePatternLocal(
+  List<Map<String, dynamic>> entries,
+) {
   if (entries.length < 2) {
     return {
       'avg_cycle_length': 0,
@@ -7,6 +12,10 @@ Map<String, dynamic> analyzeCyclePatternLocal(List<Map<String, dynamic>> entries
       'pregnancy_probability': false,
       'recommendation_tamil':
           'மேலும் சில மாதவிடாய் தேதிகளை பதிவு செய்யவும். (Log more dates for accurate analysis.)',
+      'next_period_date': null,
+      'fertile_window_start': null,
+      'fertile_window_end': null,
+      'ovulation_date': null,
     };
   }
 
@@ -55,6 +64,26 @@ Map<String, dynamic> analyzeCyclePatternLocal(List<Map<String, dynamic>> entries
   final daysSinceLast = DateTime.now().difference(lastStart).inDays;
   final pregnancyProbability = daysSinceLast > (avgLength + 10);
 
+  // Calculate next predicted period
+  DateTime? nextPeriodDate;
+  if (avgLength > 0) {
+    nextPeriodDate = lastStart.add(Duration(days: avgLength.round()));
+  }
+
+  // Calculate fertile window (typically days 11-17 of 28-day cycle)
+  DateTime? fertileWindowStart;
+  DateTime? fertileWindowEnd;
+  DateTime? ovulationDate;
+
+  if (nextPeriodDate != null && avgLength > 0) {
+    // Ovulation typically occurs 14 days before next period
+    ovulationDate = nextPeriodDate.subtract(const Duration(days: 14));
+
+    // Fertile window is 5 days before to 1 day after ovulation
+    fertileWindowStart = ovulationDate?.subtract(const Duration(days: 5));
+    fertileWindowEnd = ovulationDate?.add(const Duration(days: 1));
+  }
+
   var recommendation = 'உங்கள் cycle சீராக உள்ளது.';
   if (pregnancyProbability) {
     recommendation =
@@ -66,7 +95,16 @@ Map<String, dynamic> analyzeCyclePatternLocal(List<Map<String, dynamic>> entries
     recommendation = 'உங்கள் cycle சீராக இல்லை — VHN அக்காவிடம் பேசுங்கள்.';
   } else if (shortCycles > 0) {
     recommendation =
-        'மாதவிடாய் நாட்கள் மிக குறைவு. ஊட்டச்சத்து குறைபாடாக இருக்கலாம்.';
+        'மாதவிடாய் நாட்கள் மிக குறைவு. ஊட்ச்சத்து குறைபாடாக இருக்கலாம்.';
+  } else if (fertileWindowStart != null) {
+    final now = DateTime.now();
+    if (now.isAfter(fertileWindowStart!) && now.isBefore(fertileWindowEnd!)) {
+      recommendation =
+          'இப்போது காலம்! குழந்தை பெற்றுவதற்கு சிறந்த நாட்கள் உள்ளன.';
+    } else {
+      recommendation =
+          'அடுத்த இல்லை: இப்போது காலம் ${DateFormat('MMM dd').format(fertileWindowStart!)} - ${DateFormat('MMM dd').format(fertileWindowEnd!)}';
+    }
   }
 
   return {
@@ -74,5 +112,17 @@ Map<String, dynamic> analyzeCyclePatternLocal(List<Map<String, dynamic>> entries
     'irregularity_flag': irregularityFlag || pcosPattern,
     'pregnancy_probability': pregnancyProbability,
     'recommendation_tamil': recommendation,
+    'next_period_date': nextPeriodDate != null
+        ? DateFormat('yyyy-MM-dd').format(nextPeriodDate!)
+        : null,
+    'fertile_window_start': fertileWindowStart != null
+        ? DateFormat('yyyy-MM-dd').format(fertileWindowStart!)
+        : null,
+    'fertile_window_end': fertileWindowEnd != null
+        ? DateFormat('yyyy-MM-dd').format(fertileWindowEnd!)
+        : null,
+    'ovulation_date': ovulationDate != null
+        ? DateFormat('yyyy-MM-dd').format(ovulationDate!)
+        : null,
   };
 }

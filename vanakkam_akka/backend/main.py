@@ -1,5 +1,5 @@
 """
-Vanakkam Akka — FastAPI Backend
+Arogya — FastAPI Backend
 Tamil-language AI health app for rural women in India.
 """
 
@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database.connection import init_db, close_db
 from routes import (
-    screening_router,
+    # screening_router,  # Temporarily disabled
     cycle_router,
     notebook_router,
     records_router,
@@ -20,6 +20,7 @@ from routes import (
     nutrition_router,
     vhn_router,
     insights_router,
+    voice_router,
 )
 
 try:
@@ -45,9 +46,9 @@ async def lifespan(app: FastAPI):
 # App instance
 # ---------------------------------------------------------------------------
 app = FastAPI(
-    title="Vanakkam Akka API",
+    title="Arogya API",
     description=(
-        "Backend API for the Vanakkam Akka health app — "
+        "Backend API for the Arogya health app — "
         "AI-powered health screening, cycle tracking, teleconsultation, "
         "and nutrition guidance for rural women in Tamil Nadu."
     ),
@@ -76,7 +77,7 @@ API_PREFIX = "/api/v1"
 
 if auth_router is not None:
     app.include_router(auth_router, prefix=f"{API_PREFIX}/auth", tags=["Authentication"])
-app.include_router(screening_router, prefix=f"{API_PREFIX}/screening", tags=["Health Screening"])
+# app.include_router(screening_router, prefix=f"{API_PREFIX}/screening", tags=["Health Screening"])  # Temporarily disabled
 app.include_router(cycle_router, prefix=f"{API_PREFIX}/cycle", tags=["Cycle Tracker"])
 app.include_router(notebook_router, prefix=f"{API_PREFIX}/notebook", tags=["Health Notebook"])
 app.include_router(records_router, prefix=f"{API_PREFIX}/records", tags=["Health Records"])
@@ -85,6 +86,7 @@ app.include_router(reminders_router, prefix=f"{API_PREFIX}/reminders", tags=["Re
 app.include_router(nutrition_router, prefix=f"{API_PREFIX}/nutrition", tags=["Nutrition"])
 app.include_router(vhn_router, prefix=f"{API_PREFIX}/vhn", tags=["VHN Mode"])
 app.include_router(insights_router, prefix=f"{API_PREFIX}/insights", tags=["AI Insights"])
+app.include_router(voice_router, prefix=f"{API_PREFIX}/voice", tags=["Voice Recognition"])
 
 
 # ---------------------------------------------------------------------------

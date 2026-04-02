@@ -12,7 +12,7 @@ import '../../shared/services/local_db_service.dart';
 import '../../shared/services/voice_service.dart';
 import '../../shared/widgets/voice_button.dart';
 
-/// Full comprehensive calendar UI integrating period tracking, flow assessment, 
+/// Full comprehensive calendar UI integrating period tracking, flow assessment,
 /// and dynamically rendering localized hormonal health markers directly below.
 class PeriodTrackerScreen extends StatefulWidget {
   const PeriodTrackerScreen({super.key});
@@ -23,32 +23,38 @@ class PeriodTrackerScreen extends StatefulWidget {
 
 class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://10.0.2.2:8000/api/v1'));
-  
+
   CalendarFormat _calendarFormat = CalendarFormat.month;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  
+
   // Input State
   String _flowLevel = "MEDIUM"; // Light | Medium | Heavy
   final List<String> _symptoms = [];
-  
+
   final Map<String, String> _flowLabels = {
     "HEAVY": "அதிகம்",
     "MEDIUM": "சாதாரண",
-    "LIGHT": "குறைவு"
+    "LIGHT": "குறைவு",
   };
 
   final Map<String, String> _symptomLabels = {
     "pain": "வலி",
     "bloating": "வீக்கம்",
-    "fatigue": "சோர்வு"
+    "fatigue": "சோர்வு",
   };
 
   // Analysis State
   bool _isLoadingInsight = true;
   String _aiInsightText = "லோடிங்...";
   bool _isIrregular = false;
-  
+
+  // Enhanced prediction state
+  DateTime? _nextPeriodDate;
+  DateTime? _fertileWindowStart;
+  DateTime? _fertileWindowEnd;
+  DateTime? _ovulationDate;
+
   // Standardized mocked cache mimicking historical inputs to highlight dates visually
   final Map<DateTime, String> _historicalPeriods = {};
 
@@ -71,9 +77,22 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
 
     if (!mounted) return;
     final preg = data['pregnancy_probability'] == true;
-    final irregular =
-        data['irregularity_flag'] == true || preg;
+    final irregular = data['irregularity_flag'] == true || preg;
     context.read<CycleModeProvider>().setAiSuggestsPregnancyTest(preg);
+
+    // Extract enhanced prediction data
+    _nextPeriodDate = data['next_period_date'] != null
+        ? DateTime.parse(data['next_period_date'])
+        : null;
+    _fertileWindowStart = data['fertile_window_start'] != null
+        ? DateTime.parse(data['fertile_window_start'])
+        : null;
+    _fertileWindowEnd = data['fertile_window_end'] != null
+        ? DateTime.parse(data['fertile_window_end'])
+        : null;
+    _ovulationDate = data['ovulation_date'] != null
+        ? DateTime.parse(data['ovulation_date'])
+        : null;
 
     setState(() {
       _aiInsightText = data['recommendation_tamil'] ?? "காணவில்லை";
@@ -90,7 +109,11 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   Future<void> _logPeriod() async {
     if (_selectedDay == null) return;
 
-    final normalizedDate = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
+    final normalizedDate = DateTime(
+      _selectedDay!.year,
+      _selectedDay!.month,
+      _selectedDay!.day,
+    );
     final payload = {
       "user_id": 1,
       "start_date": DateFormat('yyyy-MM-dd').format(normalizedDate),
@@ -109,10 +132,10 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   }
 
   void _processVoiceCommand(String rawText) {
-     final text = rawText.toLowerCase();
-     if (text.contains("ஆரம்பமாச்சு") || text.contains("முடித்து")) {
-         _logPeriod();
-     }
+    final text = rawText.toLowerCase();
+    if (text.contains("ஆரம்பமாச்சு") || text.contains("முடித்து")) {
+      _logPeriod();
+    }
   }
 
   @override
@@ -120,29 +143,34 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text("மாதவிடாய் பதிவேடு", style: AppTextStyles.headingMedium), // Period Diary
+        title: Text(
+          "மாதவிடாய் பதிவேடு",
+          style: AppTextStyles.headingMedium,
+        ), // Period Diary
         leading: const BackButton(),
       ),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-             SliverToBoxAdapter(child: _buildCalendarView()),
-             SliverToBoxAdapter(
-                child: Padding(
-                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                   child: Column(
-                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                     children: [
-                       const SizedBox(height: 24),
-                       _buildPregnancyTransitionBanner(),
-                       _buildControlPanel(),
-                       const SizedBox(height: 32),
-                       _buildAiInsightBox(),
-                       const SizedBox(height: 48), // Padding for scroll clearance around mic
-                     ],
-                   ),
+            SliverToBoxAdapter(child: _buildCalendarView()),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 24),
+                    _buildPregnancyTransitionBanner(),
+                    _buildControlPanel(),
+                    const SizedBox(height: 32),
+                    _buildAiInsightBox(),
+                    const SizedBox(
+                      height: 48,
+                    ), // Padding for scroll clearance around mic
+                  ],
                 ),
-             )
+              ),
+            ),
           ],
         ),
       ),
@@ -175,15 +203,24 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const Icon(Icons.pregnant_woman_rounded, size: 40, color: AppColors.secondary),
+                    const Icon(
+                      Icons.pregnant_woman_rounded,
+                      size: 40,
+                      color: AppColors.secondary,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         "கர்ப்ப பரிசோதனை பற்றி AI குறிப்பு உள்ளது. கர்ப்ப கால கையேடுக்குச் செல்ல தட்டவும்.",
-                        style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+                        style: AppTextStyles.bodyLarge.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    const Icon(Icons.chevron_right_rounded, color: AppColors.secondary),
+                    const Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.secondary,
+                    ),
                   ],
                 ),
               ),
@@ -204,8 +241,12 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))
-        ]
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TableCalendar(
         firstDay: DateTime.utc(2020, 10, 16),
@@ -223,39 +264,45 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           setState(() => _calendarFormat = format);
         },
         calendarStyle: CalendarStyle(
-           todayDecoration: const BoxDecoration(
-             color: AppColors.primary,
-             shape: BoxShape.circle,
-           ),
-           selectedDecoration: BoxDecoration(
-             color: AppColors.primary.withValues(alpha: 0.5),
-             shape: BoxShape.circle,
-             border: Border.all(color: AppColors.primary, width: 2)
-           ),
-           markerDecoration: const BoxDecoration(
-             color: AppColors.riskRed,
-             shape: BoxShape.circle
-           )
+          todayDecoration: const BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          selectedDecoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.5),
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.primary, width: 2),
+          ),
+          markerDecoration: const BoxDecoration(
+            color: AppColors.riskRed,
+            shape: BoxShape.circle,
+          ),
         ),
         headerStyle: HeaderStyle(
-           titleTextStyle: AppTextStyles.headingMedium,
-           formatButtonVisible: false,
-           titleCentered: true,
+          titleTextStyle: AppTextStyles.headingMedium,
+          formatButtonVisible: false,
+          titleCentered: true,
         ),
         // Build visually explicit bleeding vs fertile window cues via Custom Builders
         calendarBuilders: CalendarBuilders(
           defaultBuilder: (context, day, focusedDay) {
-             final norm = DateTime(day.year, day.month, day.day);
-             if (_historicalPeriods[norm] == "PERIOD") {
-                return Container(
-                  margin: const EdgeInsets.all(6.0),
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(color: AppColors.riskRed, shape: BoxShape.circle),
-                  child: Text(day.day.toString(), style: AppTextStyles.bodyLarge.copyWith(color: Colors.white)),
-                );
-             }
-             return null;
-          }
+            final norm = DateTime(day.year, day.month, day.day);
+            if (_historicalPeriods[norm] == "PERIOD") {
+              return Container(
+                margin: const EdgeInsets.all(6.0),
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  color: AppColors.riskRed,
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  day.day.toString(),
+                  style: AppTextStyles.bodyLarge.copyWith(color: Colors.white),
+                ),
+              );
+            }
+            return null;
+          },
         ),
       ),
     );
@@ -275,67 +322,88 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text("ரத்தக் கசிவின் அளவு:", style: AppTextStyles.headingMedium), // Flow amount
-           const SizedBox(height: 16),
-           Row(
-             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-             children: _flowLabels.entries.map((entry) {
-                final isSelected = _flowLevel == entry.key;
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isSelected ? AppColors.primary : Colors.grey.shade200,
-                        foregroundColor: isSelected ? Colors.white : AppColors.textPrimary,
-                        elevation: 0,
-                      ),
-                      onPressed: () => setState(() => _flowLevel = entry.key),
-                      child: Text(entry.value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            "ரத்தக் கசிவின் அளவு:",
+            style: AppTextStyles.headingMedium,
+          ), // Flow amount
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: _flowLabels.entries.map((entry) {
+              final isSelected = _flowLevel == entry.key;
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isSelected
+                          ? AppColors.primary
+                          : Colors.grey.shade200,
+                      foregroundColor: isSelected
+                          ? Colors.white
+                          : AppColors.textPrimary,
+                      elevation: 0,
+                    ),
+                    onPressed: () => setState(() => _flowLevel = entry.key),
+                    child: Text(
+                      entry.value,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                );
-             }).toList(),
-           ),
-           
-           const SizedBox(height: 24),
-           
-           Text("அறிகுறிகள்:", style: AppTextStyles.headingMedium), // Symptoms
-           const SizedBox(height: 16),
-           Wrap(
-             spacing: 12,
-             runSpacing: 12,
-             children: _symptomLabels.entries.map((entry) {
-               final isSelected = _symptoms.contains(entry.key);
-               return FilterChip(
-                 label: Text(entry.value),
-                 selected: isSelected,
-                 selectedColor: AppColors.primary.withValues(alpha: 0.2),
-                 checkmarkColor: AppColors.primary,
-                 onSelected: (val) {
-                    setState(() { val ? _symptoms.add(entry.key) : _symptoms.remove(entry.key); });
-                 },
-               );
-             }).toList()
-           ),
-
-           const SizedBox(height: 32),
-           SizedBox(
-             width: double.infinity,
-             height: 54,
-             child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                   backgroundColor: AppColors.riskRed,
-                   foregroundColor: Colors.white,
-                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
                 ),
-                icon: const Icon(Icons.water_drop_rounded),
-                label: Text("பதிவு செய் (Log Period)", style: AppTextStyles.headingMedium.copyWith(color: Colors.white)),
-                onPressed: _logPeriod,
-             ),
-           )
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 24),
+
+          Text("அறிகுறிகள்:", style: AppTextStyles.headingMedium), // Symptoms
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: _symptomLabels.entries.map((entry) {
+              final isSelected = _symptoms.contains(entry.key);
+              return FilterChip(
+                label: Text(entry.value),
+                selected: isSelected,
+                selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                checkmarkColor: AppColors.primary,
+                onSelected: (val) {
+                  setState(() {
+                    val
+                        ? _symptoms.add(entry.key)
+                        : _symptoms.remove(entry.key);
+                  });
+                },
+              );
+            }).toList(),
+          ),
+
+          const SizedBox(height: 32),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.riskRed,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(Icons.water_drop_rounded),
+              label: Text(
+                "பதிவு செய் (Log Period)",
+                style: AppTextStyles.headingMedium.copyWith(
+                  color: Colors.white,
+                ),
+              ),
+              onPressed: _logPeriod,
+            ),
+          ),
         ],
-      )
+      ),
     );
   }
 
@@ -343,30 +411,120 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   //  AI DRIVEN TISSUE REPORTING & VHN ALERTS
   // ===============================================
   Widget _buildAiInsightBox() {
-    final bgColor = _isIrregular ? AppColors.riskYellow.withValues(alpha: 0.1) : AppColors.riskGreen.withValues(alpha: 0.1);
-    final borderColor = _isIrregular ? AppColors.riskYellow : AppColors.riskGreen;
+    final bgColor = _isIrregular
+        ? AppColors.riskYellow.withValues(alpha: 0.1)
+        : AppColors.riskGreen.withValues(alpha: 0.1);
+    final borderColor = _isIrregular
+        ? AppColors.riskYellow
+        : AppColors.riskGreen;
     final iconColor = _isIrregular ? AppColors.riskYellow : AppColors.riskGreen;
-    
+
     return Container(
-       padding: const EdgeInsets.all(20),
-       decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: borderColor, width: 2)
-       ),
-       child: _isLoadingInsight 
-         ? const Center(child: CircularProgressIndicator())
-         : Column(
-             children: [
-               Icon(_isIrregular ? Icons.warning_amber_rounded : Icons.auto_graph_rounded, color: iconColor, size: 48),
-               const SizedBox(height: 12),
-               Text(
-                 _aiInsightText,
-                 textAlign: TextAlign.center,
-                 style: AppTextStyles.headingMedium.copyWith(color: AppColors.textPrimary)
-               ),
-             ]
-         )
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: borderColor, width: 2),
+      ),
+      child: _isLoadingInsight
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Icon(
+                  _isIrregular
+                      ? Icons.warning_amber_rounded
+                      : Icons.auto_graph_rounded,
+                  color: iconColor,
+                  size: 48,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _aiInsightText,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.headingMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Enhanced prediction display
+                if (_nextPeriodDate != null || _fertileWindowStart != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      children: [
+                        if (_nextPeriodDate != null) ...[
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.event_rounded,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              Icon(
+                                Icons.favorite_border_rounded,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "அடுத்த மாதவிடாய்: ${DateFormat('MMM dd').format(_nextPeriodDate)}",
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (_fertileWindowStart != null &&
+                            _fertileWindowEnd != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.favorite_rounded,
+                                size: 16,
+                                color: AppColors.secondary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "இப்போது காலம்: ${DateFormat('MMM dd').format(_fertileWindowStart)} - ${DateFormat('MMM dd').format(_fertileWindowEnd)}",
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.secondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                        if (_ovulationDate != null) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.eco_rounded,
+                                size: 16,
+                                color: AppColors.accent,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "முட்டு தினம்: ${DateFormat('MMM dd').format(_ovulationDate)}",
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.accent,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
     );
   }
 }

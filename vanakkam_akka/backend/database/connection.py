@@ -19,7 +19,7 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "sqlite+aiosqlite:///./vanakkam_akka.db",
+    "sqlite+aiosqlite:///./arogya.db",
 )
 
 # SQLite needs connect_args for async; PostgreSQL does not

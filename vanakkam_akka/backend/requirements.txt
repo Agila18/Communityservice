@@ -25,6 +25,7 @@ transformers==4.36.2
 torch==2.1.2
 sentencepiece==0.1.99
 indicnlp==0.0.1
+openai-whisper==20231117
 
 # === Tamil NLP ===
 googletrans==4.0.0rc1

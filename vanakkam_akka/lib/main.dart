@@ -8,12 +8,12 @@ import 'core/localization/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'features/screening/screening_provider.dart';
 import 'shared/services/local_db_service.dart';
-import 'shared/services/voice_service.dart';
+import 'package:arogya/shared/services/whisper_voice_service.dart';
 import 'core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Single entry point for persistent storage initialization
   final dbService = LocalDbService();
   await dbService.init();
@@ -24,17 +24,17 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => VoiceService()),
+        ChangeNotifierProvider(create: (_) => WhisperVoiceService()),
         ChangeNotifierProvider(create: (_) => ScreeningProvider()),
         ChangeNotifierProvider<CycleModeProvider>.value(value: cycleMode),
       ],
-      child: const VanakkamAkkaApp(),
+      child: const ArogyaApp(),
     ),
   );
 }
 
-class VanakkamAkkaApp extends StatelessWidget {
-  const VanakkamAkkaApp({super.key});
+class ArogyaApp extends StatelessWidget {
+  const ArogyaApp({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.vanakkamakka" "\0"
-            VALUE "FileDescription", "vanakkam_akka" "\0"
+            VALUE "CompanyName", "com.arogya" "\0"
+            VALUE "FileDescription", "arogya" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "vanakkam_akka" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.vanakkamakka. All rights reserved." "\0"
-            VALUE "OriginalFilename", "vanakkam_akka.exe" "\0"
-            VALUE "ProductName", "vanakkam_akka" "\0"
+            VALUE "InternalName", "arogya" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.arogya. All rights reserved." "\0"
+            VALUE "OriginalFilename", "arogya.exe" "\0"
+            VALUE "ProductName", "arogya" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
